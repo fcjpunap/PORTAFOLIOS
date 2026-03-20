@@ -44,5 +44,15 @@ Este sistema permite la gestión integral de portafolios académicos. Incluye fu
 
 Este proyecto está distribuido bajo la licencia **GNU GPL v3**. Consulta el archivo `LICENSE` para más detalles.
 
+## Créditos
+
+Proyecto desarrollado por:
+- **Michael Espinoza Coila** (Planificación, Lógica de Negocio y Desarrollo).
+- Con asistencia de **Gemini Pro (Google AI)** (Refactorización, Optimización y Seguridad).
+
+## Disclaimer
+
+Este software se proporciona "tal cual", sin garantías de ningún tipo. El uso de este sistema es responsabilidad del usuario. La Facultad de Ciencias Jurídicas y Políticas no se hace responsable por la pérdida de datos derivada de una mala configuración del servidor o de la base de datos.
+
 ---
 © 2026 Facultad de Ciencias Jurídicas y Políticas - Universidad Nacional del Altiplano.
