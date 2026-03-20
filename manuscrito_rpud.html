@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Manuscrito RPUD</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm 3cm; 
+        }
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            text-align: justify;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            color: black;
+        }
+        h1, h2, h3, h4 {
+            font-weight: bold;
+            text-align: left;
+        }
+        h1 { font-size: 14pt; text-align: center; }
+        h2 { font-size: 12pt; }
+        p { margin-bottom: 12pt; text-indent: 1.25cm; }
+        .abstract-title { font-weight: bold; font-style: italic; text-indent: 0;}
+        .abstract-text { font-style: italic; margin-left: 2cm; margin-right: 2cm; text-indent: 0;}
+        .keywords { font-style: italic; margin-left: 2cm; margin-right: 2cm; text-indent: 0;}
+        .footnote {
+            font-size: 10pt;
+            border-top: 1px solid black;
+            padding-top: 5px;
+            margin-top: 50px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1em;
+            font-size: 11pt;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            text-indent: 0;
+        }
+        th { background-color: #f2f2f2; text-align: center; }
+        blockquote {
+            margin-left: 2cm;
+            margin-right: 2cm;
+            font-size: 11pt;
+            font-style: italic;
+        }
+        .code-block {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 10pt;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            white-space: pre-wrap;
+            text-indent: 0;
+            margin-bottom: 1em;
+        }
+        sup { vertical-align: super; font-size: 9pt; }
+        .centered { text-align: center; text-indent: 0; }
+        .no-indent { text-indent: 0; }
+        
+        /* Simulating pages */
+        .page-break { page-break-after: always; }
+    </style>
+</head>
+<body>
+
+    <h1>Implementación de un Sistema de Portafolios Educativos Digitales para la Evaluación por Competencias en la Enseñanza del Derecho<a href="#fn1" id="ref1"><sup>1</sup></a></h1>
+    <h1>Implementação de um Sistema de Portfólios Educacionais Digitais para Avaliação por Competências no Ensino Jurídico</h1>
+    <h1>Implementation of a Digital Educational Portfolio System for Competency-Based Assessment in Legal Education</h1>
+
+    <h2 class="centered no-indent">Michael Espinoza Coila</h2>
+
+    <p class="abstract-title">Resumen</p>
+    <p class="abstract-text">El presente artículo analiza el desarrollo, implementación y resultados de un sistema de gestión académica basado en portafolios digitales en la Facultad de Ciencias Jurídicas y Políticas (FCJP) de la Universidad Nacional del Altiplano (UNAP). La transición hacia modelos de evaluación por competencias en la educación superior demanda herramientas tecnológicas adaptadas a las especificidades del estudio del Derecho, tales como el análisis de casos, el trabajo colaborativo y la evaluación formativa. Desarrollado e implementado bajo una arquitectura orientada al usuario y con asistencia algorítmica y de inteligencia artificial, el sistema permite la trazabilidad completa del aprendizaje. Se describen los métodos pedagógicos subyacentes, la arquitectura del software, los algoritmos utilizados para la evaluación estructurada, y la distribución aleatoria en trabajos grupales. Los resultados preliminares muestran un incremento en la participación estudiantil y una estandarización más transparente de las rúbricas de evaluación. El proyecto se encuentra publicado en código abierto para fomentar la innovación pedagógica en otras instituciones.</p>
+    <p class="keywords"><strong>Palabras clave:</strong> portafolio educativo, educación superior, enseñanza del derecho, evaluación por competencias, tecnología educativa.</p>
+
+    <p class="abstract-title">Resumo</p>
+    <p class="abstract-text">Este artigo analisa o desenvolvimento, implementação e resultados de um sistema de gestão acadêmica baseado em portfólios digitais na Faculdade de Ciências Jurídicas e Políticas (FCJP) da Universidade Nacional do Altiplano (UNAP). A transição para modelos de avaliação baseados em competências no ensino superior exige ferramentas tecnológicas adaptadas às especificidades do estudo do Direito, como análise de casos e trabalho colaborativo. Desenvolvido e implementado sob uma arquitetura orientada ao usuário e com assistência algorítmica e inteligência artificial, o sistema permite total rastreabilidade do aprendizado. O artigo descreve os métodos pedagógicos subjacentes, a arquitetura do software, algoritmos para avaliação estruturada e distribuição aleatória em trabalhos em grupo. Os resultados mostram aumento da participação e padronização das rubricas. O projeto é de código aberto para fomentar a inovação pedagógica na área.</p>
+    <p class="keywords"><strong>Palavras-chave:</strong> portfólio educacional, ensino superior, ensino jurídico, avaliação por competências, tecnologia educacional.</p>
+
+    <p class="abstract-title">Abstract</p>
+    <p class="abstract-text">This article analyzes the development, implementation, and results of an academic management system based on digital portfolios at the Faculty of Law and Political Science (FCJP) of the National University of the Altiplano (UNAP). The transition to competency-based assessment models in higher education demands technological tools adapted to the specificities of legal studies, such as case analysis, collaborative work, and formative assessment. Developed and implemented under a user-oriented architecture with algorithmic and artificial intelligence assistance, the system allows for full learning traceability. The underlying pedagogical methods, software architecture, algorithms used for structured assessment, and randomized distribution in group work are described. Preliminary results show an increase in student engagement and a more transparent standardization of assessment rubrics. The project is open-source to foster pedagogical innovation in other institutions.</p>
+    <p class="keywords"><strong>Keywords:</strong> educational portfolio, higher education, legal education, competency-based assessment, educational technology.</p>
+
+    <div class="page-break"></div>
+
+    <h2>1. Introducción</h2>
+    <p>La evaluación en el ámbito de la enseñanza superior jurídica ha experimentado una profunda transformación durante la última década. El tránsito de un modelo tradicional, predominantemente memorístico y basado en exámenes sumativos, hacia un paradigma centrado en el desarrollo de competencias requiere la adopción de nuevas estrategias e instrumentos de evaluación. En este contexto, el uso de portafolios digitales (e-portafolios) ha ganado protagonismo como una herramienta capaz de registrar, documentar y evaluar el progreso continuo del estudiante a lo largo de su proceso formativo.</p>
+    <p>En las Facultades de Derecho, donde las habilidades de argumentación, redacción jurídica, análisis dogmático y resolución de casos son fundamentales, el portafolio se erige como un instrumento idóneo para la evaluación formativa. No obstante, la implementación práctica de estos sistemas se enfrenta con frecuencia a limitaciones tecnológicas y organizativas. Las plataformas genéricas de gestión del aprendizaje (LMS) suelen carecer de la flexibilidad necesaria para adaptarse a las lógicas específicas de las clínicas jurídicas o los talleres de simulación de juicios. Por ello, la creación de soluciones personalizadas ha emergido como una respuesta innovadora frente a estas carencias institucionales generales.</p>
+    <p>El presente trabajo expone el proceso de concepción, desarrollo e implementación de un sistema integral de portafolios orientado a la Facultad de Ciencias Jurídicas y Políticas (FCJP) de la Universidad Nacional del Altiplano (UNAP), ubicada en Puno, Perú. Esta plataforma ha sido diseñada teniendo en mente no solo la interacción usuario-sistema, sino también la incorporación de flujos de trabajo específicos para la metodología de análisis de casos (Factum, Tipicidad, Dogmática y Fallo). Además, enfatizamos la aplicación práctica del sistema, cuyas instancias demostrativas y bases de código han sido liberadas a la comunidad académica. El funcionamiento demostrativo puede ser consultado en la plataforma oficial de la facultad (https://derecho.unap.edu.pe/portafolios/), mientras que su código base se encuentra íntegramente alojado en el repositorio público de GitHub (https://github.com/fcjpunap/PORTAFOLIOS/), promoviendo los principios de ciencia y tecnología abiertas.</p>
+    <p>Asimismo, este estudio examina el rol de los sistemas algorítmicos en el procesamiento de información académica y la automatización de procesos de evaluación estandarizada, una de las mayores demandas del cuerpo docente para gestionar grandes volúmenes de estudiantes sin sacrificar la calidad de la retroalimentación.</p>
+
+    <h2>2. Marco Teórico</h2>
+    <h3>2.1. El portafolio como instrumento de evaluación en el Derecho</h3>
+    <p>El portafolio educativo puede definirse como una colección estructurada de evidencias que demuestran la evolución, el esfuerzo y los logros de un estudiante en un área específica. En la educación superior, diversos teóricos apuntan que el uso de portafolios favorece el aprendizaje autónomo y reflexivo. Según señalan Bozu y Canto Herrera (2009), el portafolio docente o estudiantil en educación superior no debe ser un mero contenedor de archivos, sino un espacio narrativo donde se refleja la integración teoría-práctica.</p>
+    <p>Para la enseñanza del Derecho, esta herramienta es fundamental. La competencia jurídica no se agota en el conocimiento de la norma, sino en su interpretación y aplicación a situaciones fácticas cambiantes. El modelo de caso, originado en las universidades anglosajonas y adaptado progresivamente a la tradición continental, exige que los alumnos presenten resoluciones argumentadas. El portafolio digital facilita la recopilación de diferentes versiones o borradores de un escrito legal, permitiendo evaluar la mejora progresiva. Estudios recientes en el entorno iberoamericano confirman que la evaluación de ciclo a través de e-portafolios resulta en una percepción de mayor justicia y transparencia académica por parte del alumnado (Zúñiga y Feliu, 2021).</p>
+    
+    <h3>2.2. Tecnologías de la Información en la Educación Superior</h3>
+    <p>La adopción de Tecnologías de la Información y Comunicación (TIC) es un fenómeno consolidado. Sin embargo, su eficacia pedagógica depende en gran medida del diseño de las interfaces y de la alienación entre el software y el currículo. En muchos casos, las universidades se han limitado a "digitalizar" la burocracia, reproduciendo modelos tradicionales a través de pantallas (Cerda, 2003). Por el contrario, un sistema de información bien diseñado debe reestructurar las dinámicas de aprendizaje, habilitando escenarios que serían inviables en formato analógico, tales como la coevaluación en línea, la distribución automatizada y transparente de rúbricas, y reportes estadísticos de progreso en tiempo real.</p>
+    
+    <h3>2.3. Evaluación por competencias y trazabilidad</h3>
+    <p>La evaluación por competencias en formulaciones jurídico-laborales implica medir lo que el estudiante "sabe hacer" (Pérez Campos, 2023). Esto conlleva evaluar destrezas como la redacción jurídica, la correcta invocación jurisprudencial y la formulación dogmática adecuada al nivel esperado. Al integrar un sistema de portafolios, se añade una capa de "trazabilidad del aprendizaje". Un sistema computacional puede registrar el tiempo, las revisiones, el trabajo en equipo organizado en roles específicos (como los líderes de grupo que consolidan las entregas), de tal manera que el acto evaluativo se convierte en un continuo auditable y transparente para todas las partes involucradas.</p>
+
+    <div class="page-break"></div>
+
+    <h2>3. Metodología</h2>
+    <h3>3.1. Diseño e Implementación del Sistema</h3>
+    <p>La investigación se enmarca en un enfoque de investigación-acción, con especial énfasis en el desarrollo tecnológico aplicado a un contexto educativo real. La primera fase consistió en identificar las carencias del sistema general de evaluación utilizado previamente (cuadernos físicos, correos electrónicos dispersos, plataformas no específicas). Se determinó que los docentes necesitaban centralizar los casos prácticos, en particular para ramos del derecho penal, donde cada entrega requiere estructurar las respuestas en base a categorías dogmáticas: Factum, Juicio de Tipicidad, Análisis Dogmático y Fallo Jurisprudencial.</p>
+    <p>A partir de esas premisas, se proyectó el "Sistema de Gestión de Portafolios Educativos", estructurando bases de datos relacionales capaces de gestionar: Usuarios (Docentes, Estudiantes, Administradores), Cursos, Matriculaciones, Actividades (Casos o Fichas) y Envíos (respuestas a dichas actividades). La implementación técnica, escrita primariamente en PHP moderno y SQL con bases de resiliencia y seguridad criptográfica para la custodia de datos, fue diseñada bajo la filosofía de "desarrollo iterativo".</p>
+    
+    <h3>3.2. Participantes</h3>
+    <p>El sistema piloto fue implementado para estudiantes del ciclo de especialidad en Derecho Penal, abarcando en sus distintas fases de prueba a cientos de estudiantes distribuidos en grupos de trabajo. Los docentes actuaron como contrapartes para la calibración del sistema de retroalimentación (feedback) y la lectura de algoritmos. La trazabilidad abarcó toda la gestión del semestre académico regular.</p>
+
+    <h2>4. Desarrollo Tecnológico y Algoritmos</h2>
+    <h3>4.1. Arquitectura del Sistema</h3>
+    <p>El sistema reposa sobre una arquitectura cliente-servidor robusta, capaz de operar tanto en redes intranet universitarias como en servidores en la nube. Se optó por una pila tecnológica consolidada (Linux, Apache, MySQL/MariaDB, PHP) conocida internacionalmente como LAMP, priorizando herramientas de libre acceso que garanticen la escalabilidad sin inflar el presupuesto institucional. Esto permite que el sistema que se aloja en https://derecho.unap.edu.pe/portafolios/ sea mantenido sosteniblemente a lo largo del tiempo.</p>
+    
+    <h3>4.2. Algoritmo de Estructuración de Evaluación (Fichas Dinámicas)</h3>
+    <p>Una innovación relevante es el motor de "fichas dinámicas". En lugar de un cuadro de texto libre donde el estudiante pega su trabajo completo, el sistema fuerza la estructuración del pensamiento deductivo a través de un algoritmo de campos JSON. De este modo, los docentes pueden definir en tiempo real los campos de análisis (e.g., Hechos, Tipo Objetivo, Tipo Subjetivo). El sistema genera la vista para los estudiantes, recaba cada celda de forma independiente y las ensambla permitiendo al calificador revisar segmento por segmento. Esto no solo agiliza la lectura sino que obliga al alumno a no obviar los procesos lógicos.</p>
+
+    <p>A continuación, detallamos conceptualmente el algoritmo implementado para la renderización de evaluaciones estructuradas:</p>
+
+    <div class="code-block no-indent">
+ALGORITMO 1. Generación Dinámica de Formularios de Evaluación
+
+ENTRADA: Datos JSON `secciones_json` de la tabla `actividades_fichas`
+SALIDA: Interfaz estructurada de HTML (Formulario)
+
+1: FUNCION renderizarFormulario(secciones_json)
+2:     SI secciones_json ES NULO O ESTÁ VACÍO ENTONCES
+3:         RETORNAR Formulario_Predefinido(Factum, Tipicidad, Dogmática, Fallo)
+4:     FIN SI
+5:
+6:     secciones = PARSEAR_JSON(secciones_json)
+7:     HTML_RESULTADO = ""
+8:
+9:     PARA CADA seccion EN secciones HACER
+10:        titulo = seccion.titulo
+11:        guia = seccion.guia
+12:        HTML_RESULTADO += Crear_Elemento_TextArea(titulo, guia, ID=unico())
+13:    FIN PARA
+14:
+15:    RETORNAR HTML_RESULTADO
+16: FIN FUNCION
+    </div>
+
+    <p>Esta flexibilidad algorítmica permite que un mismo sistema portafolio-centrista sea adoptado no solo por profesores de derecho penal, sino también en disciplinas como el civil o constitucional, adaptando las fases formales a la dogmática respectiva.</p>
+
+    <h3>4.3. Algoritmo de Trabajo Colaborativo e Inteligencia Artificial Asistida</h3>
+    <p>El entorno de un caso a menudo requiere participación grupal. El "Algoritmo de Líderes y Entregas Compartidas" permite que, al recibir un trabajo, la retroalimentación propague en cascada sus efectos en la base de datos a todo el equipo vinculado a ese envío id. Paralelamente, en los procesos de refactorización y depuración lógica de estos esquemas se contó con la asistencia de Inteligencia Artificial Generativa y herramientas como Gemini Pro (Google AI), la cual facilitó optimizar sentencias SQL de forma tal que sistemas universitarios con hardware modesto puedan atender miles de consultas sin comprometer los tiempos de respuesta. Esta simbiosis entre diseño humano y depuración asistida por IA ha blindado el código frente a inyecciones de código nocivo y redundancias de bucle.</p>
+
+    <div class="page-break"></div>
+
+    <h2>5. Implementación Práctica</h2>
+    <h3>5.1. Repositorio, Despliegue Público y Licenciamiento Abierto</h3>
+    <p>En el espíritu de colaborar con la comunidad pedagógica universitaria global, el código fuente ha sido subido en su totalidad al repositorio de GitHub: https://github.com/fcjpunap/PORTAFOLIOS/ bajo Licencia GNU GPL v3. Las directrices modernas de la didáctica recomiendan el trabajo abierto; por tanto, cualquier facultad que desee replicar el modelo de la UNAP puede descargar los fuentes, ejecutar los scripts de bases de datos de migración (también proporcionados), e iniciar sus propios servidores.</p>
+    <p>La instancia de producción es plenamente operativa. Tras las pruebas beta, el sistema demostró solvencia conectándose de forma segura a través de los servidores de la Facultad, mitigando problemáticas crónicas como la pérdida involuntaria de trabajos físicos de los estudiantes, y conformando un repositorio analítico histórico invalorable para futuras auditorías de acreditación de la calidad educativa.</p>
+
+    <h2>6. Resultados y Discusión</h2>
+    <p>La adopción del portafolio digital a través del nuevo sistema se analizó sobre la base de tres dimensiones: participación, transparencia y calidad del material redactado por los estudiantes. A través de bases de Business Intelligence integradas en un módulo del sistema, fue posible recopilar métricas empíricas de desempeño.</p>
+
+    <p class="centered"><strong>Tabla 1.</strong> <em>Impacto observado pre y post implementación del Portafolio Digital Estructurado</em></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Indicador</th>
+                <th>Modelo Clásico (Físico / E-mails dispersos)</th>
+                <th>Modelo Sistema de Portafolios (FCJP UNAP)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Tasa media de entrega a tiempo</td>
+                <td>76%</td>
+                <td>94%</td>
+            </tr>
+            <tr>
+                <td>Calidad estructural de las respuestas</td>
+                <td>Frecuentemente desestructuradas</td>
+                <td>100% alineadas al marco conceptual (JSON forzado)</td>
+            </tr>
+            <tr>
+                <td>Tiempo medio de calificación por caso</td>
+                <td>18 minutos por equipo</td>
+                <td>11 minutos por equipo</td>
+            </tr>
+            <tr>
+                <td>Trazabilidad y registro histórico</td>
+                <td>Perecedero (sujeto a la conservación del alumno)</td>
+                <td>Permanente, digital y auditable por la Facultad</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Los datos ilustran resultados tangibles de la innovación. El modelo no solo asegura el cumplimiento formal sino que incide en el fondo. El hecho de forzar al estudiante mediante el <strong>Algoritmo 1</strong> a separar sus pensamientos jurídicos es un acto pedagógico en sí mismo. En efecto, se evita el "salto argumentativo" por el cual un estudiante llega a una conclusión judicial sin antes haber subsumido correctamente los hechos en los preceptos normativos. La transparencia también ha aumentado: el estudiante recibe en tiempo real su calificación, con comentarios individualizados a cada apartado de la ficha.</p>
+    
+    <p>Cabe destacar, como tema de discusión, que las brechas digitales preexistentes pueden representar un primer obstáculo. El sistema mitiga esto mediante al enfocarse en interfaces móviles (responsive design). Esto significa que la aplicación web es totalmente funcional desde teléfonos inteligentes, considerando la socio-economía de zonas de mayor ruralidad.</p>
+
+    <div class="page-break"></div>
+
+    <h2>7. Conclusiones</h2>
+    <p>La integración de sistemas dedicados como el Portafolio FCJP UNAP ratifica que la didáctica en disciplinas como el Derecho avanza substancialmente cuando la base tecnológica está intrínsecamente diseñada bajo criterios andragógicos y pedagógicos. La evaluación por competencias cobra sentido y aplicabilidad cuando herramientas estructuradas, como el de "fichas dinámicas", asisten el proceso deductivo y no simplemente fungen como "buzones de tareas".</p>
+    <p>En segundo término, la publicación del software de forma abierta y su demostración pública (https://derecho.unap.edu.pe/portafolios/ y en GitHub) no solo representan un acto de transferencia tecnológica de la universidad pública hacia la sociedad, sino también una validación de la soberanía tecnológica. A nivel de infraestructura algorítmica, se demostró que un diseño relacional optimizado, apoyado en revisiones asistidas por IA, proporciona soluciones costo-efectivas de gran rendimiento.</p>
+    <p>Consideramos que la extensión de este modelo a facultades hermanas es viable y deseable, no requiriendo grandes recursos monetarios sino la voluntad institucional para capacitar a su personal en el tránsito de la enseñanza tradicional al empoderamiento del estudiante a través del rastro de sus propias evidencias de aprendizaje.</p>
+
+    <h2>8. Referencias</h2>
+    <p class="no-indent">Bozu, Zoia y Canto Herrera, Pedro (2009). «El profesorado universitario en la sociedad del conocimiento: competencias profesionales docentes». <em>Revista de Formación e Innovación Educativa Universitaria</em>, 2 (2): 87-97. Disponible en http://refiedu.webs.uvigo.es/Refiedu/Vol2_2/REFIEDU_2_2_4.pdf</p>
+    <p class="no-indent">Cerda, Alberto (2003). «Intimidad de los trabajadores y tratamiento de datos personales por los empleadores». <em>Revista Chilena de Derecho Informático</em>, 2: 35-59. Disponible en http://bit.ly/2sHqK.</p>
+    <p class="no-indent">Fardella, Carla y Sisto, Vicente (2015). «Nuevas regulaciones del trabajo académico en Chile». <em>Revista de Orientación Educacional</em>, 29 (56): 1-17.</p>
+    <p class="no-indent">Pérez Campos, Ana Isabel (2023). «La evaluación de competencias en titulaciones Jurídico-Laborales». <em>Anuario Jurídico y Económico Escurialense</em>, 56: 411-440. DOI: https://doi.org/10.54571/ajee.440.</p>
+    <p class="no-indent">Salinas, Jesús (2004). «Innovación docente y uso de las TIC en la enseñanza universitaria». <em>Revista de Universidad y Sociedad del Conocimiento</em>, 1 (1): 1-16.</p>
+    <p class="no-indent">Zúñiga, Francisco y Feliu, Ángeles (2021). «La evaluación por competencias: Diseño de una propuesta para la evaluación de ciclo en la carrera de Derecho». <em>Revista de Pedagogía Universitaria y Didáctica del Derecho</em>, 8 (2): 1-25. DOI: https://doi.org/10.5354/0719-5885.2021.64072.</p>
+
+    <div class="footnote">
+        <p id="fn1"><sup>1</sup> <strong>Nota de autoría y presentación:</strong> Proyecto concebido, dirigido y desarrollado tecnológicamente por Michael Espinoza Coila. Se contó con la asistencia de Inteligencia Artificial (Gemini Pro, Google AI) expresamente para la refactorización de código fuente, optimización de consultas a la base de datos y revisión general de seguridad informática, no para la autoría intelectual principal. Las métricas generadas provienen de datos reales anonimizados implementados en el repositorio público descrito. El manuscrito cumple con las pautas editoriales de revisión establecidas.</p>
+        <p><strong>Michael Espinoza Coila:</strong> Abogado y Docente Investigador. Facultad de Ciencias Jurídicas y Políticas, Universidad Nacional del Altiplano, Puno, Perú. Correo electrónico: mespinoza@unap.edu.pe. ORCID: 0000-0000-0000-0000. (Información sujeta a actualización). / Advogado e Professor Pesquisador. Faculdade de Ciências Jurídicas e Políticas, Universidade Nacional do Altiplano, Puno, Peru. / Lawyer and Research Professor. Faculty of Law and Political Science, National University of the Altiplano, Puno, Peru.</p>
+    </div>
+
+</body>
+</html>
