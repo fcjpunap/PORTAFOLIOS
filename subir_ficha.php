@@ -134,6 +134,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h4 class="fw-bold mb-1"><?= htmlspecialchars($actividad['titulo_caso']) ?></h4>
             <span class="badge bg-<?= $es_grupal ? 'primary' : 'secondary' ?> mb-3"><?= $es_grupal ? 'Trabajo Grupal' : 'Trabajo Individual' ?></span>
             
+            <?php if (!empty($actividad['descripcion'])): ?>
+            <div class="alert alert-secondary text-dark shadow-sm border-0 mb-4" style="text-align: justify; white-space: pre-line;">
+                <strong><i class="fas fa-info-circle me-1"></i> Lineamientos del Caso / Descripción:</strong><br>
+                <?= htmlspecialchars($actividad['descripcion']) ?>
+            </div>
+            <?php endif; ?>
+            
             <form action="" method="POST" enctype="multipart/form-data">
                 
                 <?php if ($es_grupal): ?>

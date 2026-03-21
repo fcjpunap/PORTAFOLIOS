@@ -29,7 +29,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT e.id, e.actividad_id, e.lider_id, e.calificacion, e.retroalimentacion, e.fecha_envio, e.respuestas_json,
                e.factum, e.tipicidad, e.dogmatica, e.jurisprudencia, e.fallo,
-               a.titulo_caso, a.tipo_trabajo, a.curso_id,
+               a.titulo_caso, a.tipo_trabajo, a.curso_id, a.descripcion,
                u.nombres, u.apellidos, u.codigo_estudiante
         FROM envios_fichas e
         JOIN actividades_fichas a ON e.actividad_id = a.id
@@ -106,6 +106,12 @@ try {
                     </div>
                     
                     <div class="card-body p-4" style="font-size: 1.05rem; line-height: 1.6;">
+                        <?php if (!empty($envio['descripcion'])): ?>
+                        <div class="alert alert-secondary text-dark shadow-sm border-0 mb-4" style="text-align: justify; white-space: pre-line;">
+                            <strong><i class="fas fa-info-circle me-1"></i> Lineamientos del Caso / Descripción:</strong><br>
+                            <?= htmlspecialchars($envio['descripcion']) ?>
+                        </div>
+                        <?php endif; ?>
                         <?php 
                         // LÓGICA INTELIGENTE: Verifica si hay JSON, si no, busca en las columnas antiguas
                         if (!empty($envio['respuestas_json'])) {
