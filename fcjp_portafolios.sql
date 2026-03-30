@@ -38,16 +38,17 @@ CREATE TABLE `actividades_fichas` (
   `estructura_campos` text DEFAULT NULL,
   `tipo_trabajo` varchar(20) DEFAULT 'Grupal',
   `max_integrantes` int(11) DEFAULT 5,
-  `secciones_json` text DEFAULT NULL
+  `secciones_json` text DEFAULT NULL,
+  `habilitado` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0: Oculto, 1: Visible para alumnos'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `actividades_fichas`
 --
 
-INSERT INTO `actividades_fichas` (`id`, `curso_id`, `titulo_caso`, `fecha_inicio`, `fecha_cierre`, `descripcion`, `fecha_limite`, `estructura_campos`, `tipo_trabajo`, `max_integrantes`, `secciones_json`) VALUES
-(10, 1, 'Semana 1: Delito de Rebelión (Art. 346)', '2026-03-10 08:00:00', '2026-03-20 23:59:00', 'Análisis del caso Asonada en el sur', '2026-03-20 23:59:00', NULL, 'Grupal', 5, '[{\"titulo\":\"Factum\",\"guia\":\"Hechos relevantes\"},{\"titulo\":\"Tipicidad\",\"guia\":\"Tipo penal\"},{\"titulo\":\"Dogmatica\",\"guia\":\"Análisis de la teoría del delito\"},{\"titulo\":\"Fallo\",\"guia\":\"Conclusión\"}]'),
-(11, 1, 'Semana 2: Sedición y Motín', '2026-03-15 08:00:00', '2026-03-27 23:59:00', 'Caso hipotético: Toma de instalaciones estratégicas', '2026-03-27 23:59:00', '[{\"titulo\":\"Factum\",\"guia\":\"Redacte un resumen cronológico de los hechos.\"},{\"titulo\":\"Juicio de Tipicidad\",\"guia\":\"Indique y sustente el tipo penal aplicable.\"},{\"titulo\":\"Análisis Dogmático\",\"guia\":\"Analice la antijuridicidad y culpabilidad.\"},{\"titulo\":\"Fallo o Conclusión\",\"guia\":\"Emita su conclusión final del caso.\"}]', 'Grupal', 5, NULL);
+INSERT INTO `actividades_fichas` (`id`, `curso_id`, `titulo_caso`, `fecha_inicio`, `fecha_cierre`, `descripcion`, `fecha_limite`, `estructura_campos`, `tipo_trabajo`, `max_integrantes`, `secciones_json`, `habilitado`) VALUES
+(10, 1, 'Semana 1: Delito de Rebelión (Art. 346)', '2026-03-10 08:00:00', '2026-03-20 23:59:00', 'Análisis del caso Asonada en el sur', '2026-03-20 23:59:00', NULL, 'Grupal', 5, '[{\"titulo\":\"Factum\",\"guia\":\"Hechos relevantes\"},{\"titulo\":\"Tipicidad\",\"guia\":\"Tipo penal\"},{\"titulo\":\"Dogmatica\",\"guia\":\"Análisis de la teoría del delito\"},{\"titulo\":\"Fallo\",\"guia\":\"Conclusión\"}]', 1),
+(11, 1, 'Semana 2: Sedición y Motín', '2026-03-15 08:00:00', '2026-03-27 23:59:00', 'Caso hipotético: Toma de instalaciones estratégicas', '2026-03-27 23:59:00', '[{\"titulo\":\"Factum\",\"guia\":\"Redacte un resumen cronológico de los hechos.\"},{\"titulo\":\"Juicio de Tipicidad\",\"guia\":\"Indique y sustente el tipo penal aplicable.\"},{\"titulo\":\"Análisis Dogmático\",\"guia\":\"Analice la antijuridicidad y culpabilidad.\"},{\"titulo\":\"Fallo o Conclusión\",\"guia\":\"Emita su conclusión final del caso.\"}]', 'Grupal', 5, NULL, 1);
 
 -- --------------------------------------------------------
 
