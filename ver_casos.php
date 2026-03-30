@@ -35,7 +35,7 @@ $sql_casos = "
     FROM actividades_fichas a
     LEFT JOIN envios_fichas e ON a.id = e.actividad_id 
          AND e.id IN (SELECT envio_id FROM envio_integrantes WHERE estudiante_id = ?)
-    WHERE a.curso_id = ?
+    WHERE a.curso_id = ? AND a.habilitado = 1
     ORDER BY a.fecha_limite ASC
 ";
 $stmt_casos = $pdo->prepare($sql_casos);

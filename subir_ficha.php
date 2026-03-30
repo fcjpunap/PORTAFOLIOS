@@ -9,7 +9,7 @@ $actividad_id = $_GET['id'] ?? null;
 if (!$actividad_id) die("Actividad no especificada.");
 
 // 1. Obtener detalles de la actividad y del estudiante
-$stmt_act = $pdo->prepare("SELECT a.*, c.nombre_curso FROM actividades_fichas a JOIN cursos c ON a.curso_id = c.id WHERE a.id = ?");
+$stmt_act = $pdo->prepare("SELECT a.*, c.nombre_curso FROM actividades_fichas a JOIN cursos c ON a.curso_id = c.id WHERE a.id = ? AND a.habilitado = 1");
 $stmt_act->execute([$actividad_id]);
 $actividad = $stmt_act->fetch(PDO::FETCH_ASSOC);
 if (!$actividad) die("Actividad no encontrada.");

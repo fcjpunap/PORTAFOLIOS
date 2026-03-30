@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
             $fecha_cierre = $_POST['fecha_cierre'] ?: date('Y-m-d H:i:s', strtotime('+7 days'));
             $tipo_trabajo = $_POST['tipo_trabajo'];
             $max_integrantes = ($tipo_trabajo === 'Grupal') ? intval($_POST['max_integrantes']) : 1;
+            $habilitado = isset($_POST['habilitado']) ? 1 : 0;
             
             // Procesar apartados
             $titulos = $_POST['sec_titulo'] ?? [];
@@ -31,13 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
             $secciones_json = json_encode($secciones, JSON_UNESCAPED_UNICODE);
 
             if ($_POST['accion'] === 'crear') {
-                $stmt = $pdo->prepare("INSERT INTO actividades_fichas (curso_id, titulo_caso, descripcion, fecha_cierre, fecha_limite, tipo_trabajo, max_integrantes, secciones_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$curso_id, $titulo, $descripcion, $fecha_cierre, $fecha_cierre, $tipo_trabajo, $max_integrantes, $secciones_json]);
+                $stmt = $pdo->prepare("INSERT INTO actividades_fichas (curso_id, titulo_caso, descripcion, fecha_cierre, fecha_limite, tipo_trabajo, max_integrantes, secciones_json, habilitado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$curso_id, $titulo, $descripcion, $fecha_cierre, $fecha_cierre, $tipo_trabajo, $max_integrantes, $secciones_json, $habilitado]);
                 $mensaje = "Actividad creada exitosamente."; $tipo_mensaje = "success";
             } else {
                 $id_editar = $_POST['actividad_id'];
-                $stmt = $pdo->prepare("UPDATE actividades_fichas SET titulo_caso=?, descripcion=?, fecha_cierre=?, fecha_limite=?, tipo_trabajo=?, max_integrantes=?, secciones_json=? WHERE id=?");
-                $stmt->execute([$titulo, $descripcion, $fecha_cierre, $fecha_cierre, $tipo_trabajo, $max_integrantes, $secciones_json, $id_editar]);
+                $stmt = $pdo->prepare("UPDATE actividades_fichas SET titulo_caso=?, descripcion=?, fecha_cierre=?, fecha_limite=?, tipo_trabajo=?, max_integrantes=?, secciones_json=?, habilitado=? WHERE id=?");
+                $stmt->execute([$titulo, $descripcion, $fecha_cierre, $fecha_cierre, $tipo_trabajo, $max_integrantes, $secciones_json, $habilitado, $id_editar]);
                 $mensaje = "Actividad actualizada."; $tipo_mensaje = "info";
             }
         } elseif ($_POST['accion'] === 'eliminar') {
@@ -46,9 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
             
         } elseif ($_POST['accion'] === 'duplicar') {
             $id_orig = $_POST['actividad_id'];
-            $stmt = $pdo->prepare("INSERT INTO actividades_fichas (curso_id, titulo_caso, descripcion, fecha_cierre, fecha_limite, tipo_trabajo, max_integrantes, secciones_json) SELECT curso_id, CONCAT(titulo_caso, ' (Copia)'), descripcion, fecha_cierre, fecha_limite, tipo_trabajo, max_integrantes, secciones_json FROM actividades_fichas WHERE id = ?");
+            $stmt = $pdo->prepare("INSERT INTO actividades_fichas (curso_id, titulo_caso, descripcion, fecha_cierre, fecha_limite, tipo_trabajo, max_integrantes, secciones_json, habilitado) SELECT curso_id, CONCAT(titulo_caso, ' (Copia)'), descripcion, fecha_cierre, fecha_limite, tipo_trabajo, max_integrantes, secciones_json, 0 FROM actividades_fichas WHERE id = ?");
             $stmt->execute([$id_orig]);
-            $mensaje = "Caso duplicado con éxito."; $tipo_mensaje = "success";
+            $mensaje = "Caso duplicado con éxito. (Oculto por defecto)"; $tipo_mensaje = "success";
+        } elseif ($_POST['accion'] === 'toggle') {
+            $pdo->prepare("UPDATE actividades_fichas SET habilitado = NOT habilitado WHERE id = ?")->execute([$_POST['actividad_id']]);
+            $mensaje = "Visibilidad del caso actualizada."; $tipo_mensaje = "info";
         }
     } catch (PDOException $e) { $mensaje = "Error DB: " . $e->getMessage(); $tipo_mensaje = "danger"; }
 }
@@ -121,7 +125,7 @@ if (!empty($ids_cursos)) {
             </div>
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light"><tr><th class="ps-3">Actividad</th><th>Curso</th><th>Tipo</th><th>Vence</th><th class="text-center">Acciones</th></tr></thead>
+                    <thead class="table-light"><tr><th class="ps-3">Actividad</th><th>Curso</th><th>Tipo</th><th>Vence</th><th class="text-center">Estado</th><th class="text-center">Acciones</th></tr></thead>
                     <tbody>
                         <?php if(empty($actividades)): ?><tr><td colspan="5" class="text-center py-4 text-muted">No tienes actividades publicadas.</td></tr><?php else: ?>
                             <?php foreach($actividades as $a): ?>
@@ -130,6 +134,15 @@ if (!empty($ids_cursos)) {
                                 <td class="small"><?= htmlspecialchars($a['nombre_curso']) ?></td>
                                 <td><span class="badge bg-<?= $a['tipo_trabajo']=='Grupal'?'info':'secondary' ?>"><?= $a['tipo_trabajo'] ?></span></td>
                                 <td class="small text-muted"><i class="far fa-calendar-alt me-1"></i> <?= date('d/m/Y H:i', strtotime($a['fecha_cierre'])) ?></td>
+                                <td class="text-center">
+                                    <form action="" method="POST" style="display:inline;">
+                                        <input type="hidden" name="accion" value="toggle">
+                                        <input type="hidden" name="actividad_id" value="<?= $a['id'] ?>">
+                                        <button type="submit" class="btn btn-sm <?= $a['habilitado'] ? 'btn-success' : 'btn-secondary' ?>" title="Cambiar visibilidad">
+                                            <i class="fas <?= $a['habilitado'] ? 'fa-eye' : 'fa-eye-slash' ?>"></i> <?= $a['habilitado'] ? 'Visible' : 'Oculto' ?>
+                                        </button>
+                                    </form>
+                                </td>
                                 <td class="text-center">
                                     <div class="btn-group shadow-sm">
                                         <a href="revisar_trabajos.php?id=<?= $a['id'] ?>" class="btn btn-sm btn-dark" title="Revisar Envíos de Alumnos">
@@ -170,10 +183,14 @@ if (!empty($ids_cursos)) {
                             <div class="col-md-6 mb-3"><label class="fw-bold small text-secondary">Título de la Actividad *</label><input type="text" name="titulo_caso" id="inputTitulo" class="form-control" required></div>
                         </div>
                         <div class="mb-3"><label class="fw-bold small text-secondary">Descripción y Lineamientos *</label><textarea name="descripcion" id="inputDesc" class="form-control" rows="3" required></textarea></div>
-                        <div class="row mb-4">
+                        <div class="row mb-3">
                             <div class="col-md-4 mb-3"><label class="fw-bold small text-secondary">Fecha Cierre *</label><input type="datetime-local" name="fecha_cierre" id="inputFecha" class="form-control" required></div>
                             <div class="col-md-4 mb-3"><label class="fw-bold small text-secondary">Tipo</label><select name="tipo_trabajo" id="inputTipo" class="form-select" onchange="toggleInt()" required><option value="Grupal">Grupal</option><option value="Individual">Individual</option></select></div>
                             <div class="col-md-4 mb-3" id="divMaxInt"><label class="fw-bold small text-secondary">Máx Integrantes</label><input type="number" name="max_integrantes" id="inputMax" class="form-control" value="5" min="2" max="10"></div>
+                        </div>
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" name="habilitado" id="inputHabilitado" value="1">
+                            <label class="form-check-label fw-bold small text-secondary" for="inputHabilitado">Visible para estudiantes (Habilitado)</label>
                         </div>
 
                         <div class="card bg-light border-0">
@@ -207,6 +224,7 @@ if (!empty($ids_cursos)) {
             document.getElementById('inputAccion').value = 'crear';
             document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-plus-circle me-2"></i> Crear Nuevo Caso';
             document.getElementById('secciones_container').innerHTML = '';
+            document.getElementById('inputHabilitado').checked = false;
             
             addSeccion('Factum', 'Resumen material de los hechos');
             addSeccion('Dogmática', 'Análisis de la teoría del delito');
@@ -226,6 +244,7 @@ if (!empty($ids_cursos)) {
             document.getElementById('inputFecha').value = act.fecha_cierre ? act.fecha_cierre.replace(' ', 'T') : '';
             document.getElementById('inputTipo').value = act.tipo_trabajo;
             document.getElementById('inputMax').value = act.max_integrantes;
+            document.getElementById('inputHabilitado').checked = (act.habilitado == 1);
             
             document.getElementById('secciones_container').innerHTML = '';
             let secciones = act.secciones_json ? JSON.parse(act.secciones_json) : [];
