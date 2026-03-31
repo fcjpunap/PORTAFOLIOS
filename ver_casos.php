@@ -73,10 +73,17 @@ $casos = $stmt_casos->fetchAll(PDO::FETCH_ASSOC);
     <main class="container py-5">
         
         <div class="card shadow-sm border-0 mb-5 border-start border-4 border-primary bg-white">
-            <div class="card-body p-4">
-                <span class="badge bg-primary mb-2">Casos Prácticos</span>
-                <h2 class="fw-bold text-dark mb-1"><?= htmlspecialchars($curso_info['nombre_curso']) ?></h2>
-                <p class="text-muted mb-0"><i class="fas fa-chalkboard-teacher me-1"></i> Docente: <?= htmlspecialchars($curso_info['apellidos'] . ', ' . $curso_info['nombres']) ?></p>
+            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <span class="badge bg-primary mb-2">Casos Prácticos</span>
+                    <h2 class="fw-bold text-dark mb-1"><?= htmlspecialchars($curso_info['nombre_curso']) ?></h2>
+                    <p class="text-muted mb-0"><i class="fas fa-chalkboard-teacher me-1"></i> Docente: <?= htmlspecialchars($curso_info['apellidos'] . ', ' . $curso_info['nombres']) ?></p>
+                </div>
+                <div>
+                    <a href="generar_portafolio.php?curso_id=<?= $curso_id ?>&estudiante_id=<?= $estudiante_id ?>" target="_blank" class="btn btn-primary fw-bold px-4 py-2 shadow-sm rounded-pill">
+                        <i class="fas fa-file-pdf me-2"></i> Generar Portafolio Completo
+                    </a>
+                </div>
             </div>
         </div>
 

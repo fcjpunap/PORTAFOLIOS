@@ -11,8 +11,42 @@ $envio_id = $_GET['id'] ?? null;
 if (!$envio_id) die("ID de envío no especificado.");
 
 $mensaje = ''; $tipo_mensaje = ''; $error_db = '';
+if (isset($_GET['msg']) && $_GET['msg'] === 'equipo_actualizado') {
+    $mensaje = "Equipo de trabajo actualizado exitosamente.";
+    $tipo_mensaje = "success";
+}
 
 try {
+    // Procesar edición de equipo
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_equipo'])) {
+        $nuevos_integrantes = $_POST['integrantes'] ?? [];
+        
+        $stmt_lider = $pdo->prepare("SELECT lider_id FROM envios_fichas WHERE id = ?");
+        $stmt_lider->execute([$envio_id]);
+        $lider_id = $stmt_lider->fetchColumn();
+        
+        $pdo->beginTransaction();
+        try {
+            $stmt_del = $pdo->prepare("DELETE FROM envio_integrantes WHERE envio_id = ?");
+            $stmt_del->execute([$envio_id]);
+            
+            $stmt_ins = $pdo->prepare("INSERT INTO envio_integrantes (envio_id, estudiante_id) VALUES (?, ?)");
+            $stmt_ins->execute([$envio_id, $lider_id]);
+            
+            foreach ($nuevos_integrantes as $comp_id) {
+                if ($comp_id != $lider_id) {
+                    $stmt_ins->execute([$envio_id, $comp_id]);
+                }
+            }
+            $pdo->commit();
+            header("Location: calificar.php?id=$envio_id&msg=equipo_actualizado");
+            exit;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $error_db = "Error al actualizar equipo: " . $e->getMessage();
+        }
+    }
+
     // Procesar calificación
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['calificar'])) {
         $calificacion = $_POST['calificacion'];
@@ -50,10 +84,16 @@ try {
     
     // Obtener integrantes si es grupal
     $integrantes = [];
+    $companeros = [];
     if ($es_grupal) {
-        $stmt_int = $pdo->prepare("SELECT u.nombres, u.apellidos, u.codigo_estudiante FROM envio_integrantes ei JOIN usuarios u ON ei.estudiante_id = u.id WHERE ei.envio_id = ? ORDER BY u.apellidos ASC");
+        $stmt_int = $pdo->prepare("SELECT u.id, u.nombres, u.apellidos, u.codigo_estudiante FROM envio_integrantes ei JOIN usuarios u ON ei.estudiante_id = u.id WHERE ei.envio_id = ? ORDER BY u.apellidos ASC");
         $stmt_int->execute([$envio_id]);
         $integrantes = $stmt_int->fetchAll(PDO::FETCH_ASSOC);
+        
+        $sql_comp = "SELECT u.id, u.nombres, u.apellidos FROM usuarios u JOIN matriculas m ON u.id = m.estudiante_id WHERE m.curso_id = ? AND u.rol = 'estudiante' ORDER BY u.apellidos ASC";
+        $stmt_comp = $pdo->prepare($sql_comp);
+        $stmt_comp->execute([$envio['curso_id']]);
+        $companeros = $stmt_comp->fetchAll(PDO::FETCH_ASSOC);
     }
 
 } catch (PDOException $e) { $error_db = "Error: " . $e->getMessage(); }
@@ -65,6 +105,7 @@ try {
     <title>Calificar Trabajo | UNAP</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style> body { background-color: #f0f2f5; } .bg-unap { background-color: #0b2e59; } .modal-xl-custom { max-width: 95%; } </style>
 </head>
 <body>
@@ -147,7 +188,12 @@ try {
                         <?php if ($mensaje): ?><div class="alert alert-<?= $tipo_mensaje ?> shadow-sm"><i class="fas fa-check-circle me-1"></i> <?= $mensaje ?></div><?php endif; ?>
                         
                         <?php if ($es_grupal): ?>
-                            <h6 class="fw-bold text-secondary text-uppercase small mb-2">Equipo de Trabajo:</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold text-secondary text-uppercase small mb-0">Equipo de Trabajo:</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalEditarEquipo">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                            </div>
                             <ul class="list-group shadow-sm mb-4">
                                 <?php foreach($integrantes as $int): ?>
                                     <li class="list-group-item py-2 px-3 <?= ($int['codigo_estudiante'] === $envio['codigo_estudiante']) ? 'bg-light fw-bold border-primary border-start-3' : '' ?>">
@@ -190,5 +236,49 @@ try {
     <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <?php if ($es_grupal): ?>
+    <div class="modal fade" id="modalEditarEquipo" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <form action="calificar.php?id=<?= $envio_id ?>" method="POST">
+                    <div class="modal-header bg-primary text-white border-0">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-users-cog me-2"></i> Editar Equipo</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="text-muted small mb-3">Selecciona los integrantes que formarán parte de este equipo. <strong>El líder no puede ser removido.</strong></p>
+                        <div class="mb-3">
+                            <label class="fw-bold mb-2">Integrantes del Equipo:</label>
+                            <select class="form-select select2-equipo w-100" name="integrantes[]" multiple="multiple">
+                                <?php 
+                                $ids_actuales = array_column($integrantes, 'id');
+                                foreach($companeros as $c): 
+                                    if ($c['id'] == $envio['lider_id']) continue;
+                                    $selected = in_array($c['id'], $ids_actuales) ? 'selected' : '';
+                                ?>
+                                    <option value="<?= $c['id'] ?>" <?= $selected ?>><?= htmlspecialchars($c['apellidos'].', '.$c['nombres']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-secondary fw-bold shadow-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" name="editar_equipo" class="btn btn-primary fw-bold shadow-sm"><i class="fas fa-save me-2"></i> Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+    $(document).ready(function() {
+        if ($('.select2-equipo').length) {
+            $('.select2-equipo').select2({ placeholder: "Busca estudiantes por apellidos...", dropdownParent: $('#modalEditarEquipo') });
+        }
+    });
+    </script>
+    <?php endif; ?>
 </body>
 </html>

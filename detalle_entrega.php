@@ -22,7 +22,7 @@ if (!$stmt_check->fetch()) {
 
 // Obtener datos del envío (Traemos tanto las columnas antiguas como la nueva JSON)
 $sql = "
-    SELECT e.factum, e.tipicidad, e.dogmatica, e.jurisprudencia, e.fallo, e.fecha_envio, e.respuestas_json, e.estado, e.calificacion,
+    SELECT e.factum, e.tipicidad, e.dogmatica, e.jurisprudencia, e.fallo, e.fecha_envio, e.respuestas_json, e.estado, e.calificacion, e.retroalimentacion,
            a.titulo_caso, c.nombre_curso,
            (SELECT GROUP_CONCAT(CONCAT(u.nombres, ' ', u.apellidos) SEPARATOR ', ')
             FROM envio_integrantes ei JOIN usuarios u ON ei.estudiante_id = u.id WHERE ei.envio_id = e.id) as estudiantes_autores
@@ -74,12 +74,18 @@ if (!$caso) { die("El envío no existe."); }
                         <hr class="w-50 mx-auto my-3">
                         
                         <?php if($caso['estado'] === 'Revisado'): ?>
-                            <div class="d-inline-block px-4 py-2 bg-success bg-opacity-10 border border-success rounded-3">
+                            <div class="d-inline-block px-4 py-2 bg-success bg-opacity-10 border border-success rounded-3 mb-3">
                                 <h6 class="text-success fw-bold mb-1"><i class="fas fa-check-double"></i> Trabajo Calificado</h6>
                                 <h3 class="fw-bold text-success mb-0">Nota: <?= htmlspecialchars($caso['calificacion']) ?> / 20</h3>
                             </div>
+                            <?php if(!empty($caso['retroalimentacion'])): ?>
+                            <div class="alert alert-info shadow-sm mt-3 text-start">
+                                <h6 class="fw-bold text-info-emphasis mb-2"><i class="fas fa-comment-dots text-info me-2"></i>Retroalimentación del Docente:</h6>
+                                <div class="px-2 py-1" style="font-size: 1.05rem; line-height: 1.5; color: #333; text-align: justify; white-space: pre-line;"><?= htmlspecialchars($caso['retroalimentacion']) ?></div>
+                            </div>
+                            <?php endif; ?>
                         <?php else: ?>
-                            <div class="d-inline-block px-4 py-2 bg-warning bg-opacity-10 border border-warning rounded-3">
+                            <div class="d-inline-block px-4 py-2 bg-warning bg-opacity-10 border border-warning rounded-3 mb-3">
                                 <h6 class="text-warning text-dark fw-bold mb-0"><i class="fas fa-hourglass-half"></i> Pendiente de Calificación</h6>
                             </div>
                         <?php endif; ?>
