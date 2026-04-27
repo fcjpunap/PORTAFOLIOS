@@ -1,5 +1,7 @@
 <?php
 // revisar_trabajos.php - Lista de envíos con opciones de Borrado y Portafolio
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 if (!isset($_SESSION['usuario_id']) || !in_array($_SESSION['rol'], ['docente', 'admin'])) {
     header('Location: login.php');

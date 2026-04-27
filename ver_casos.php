@@ -1,5 +1,7 @@
 <?php
 // ver_casos.php - Vista del estudiante para listar y enviar las tareas de un curso específico
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'estudiante') {
@@ -109,13 +111,25 @@ $casos = $stmt_casos->fetchAll(PDO::FETCH_ASSOC);
                                     <?= $caso['fecha_limite'] ? date('d/m/Y h:i A', strtotime($caso['fecha_limite'])) : 'Sin fecha' ?>
                                 </div>
 
-                                <?php if (!$caso['envio_id']): ?>
-                                    <div class="alert alert-warning py-2 px-3 small text-center fw-bold mb-3 border-warning">
-                                        <i class="fas fa-exclamation-triangle me-1"></i> Pendiente de envío
-                                    </div>
-                                    <a href="subir_ficha.php?id=<?= $caso['actividad_id'] ?>" class="btn btn-primary w-100 fw-bold">
-                                        <i class="fas fa-cloud-upload-alt me-1"></i> Resolver y Subir
-                                    </a>
+                                <?php 
+                                    $is_expired = $caso['fecha_limite'] && strtotime($caso['fecha_limite']) < time();
+                                    if (!$caso['envio_id']): 
+                                        if ($is_expired):
+                                ?>
+                                            <div class="alert alert-danger py-2 px-3 small text-center fw-bold mb-3 border-danger">
+                                                <i class="fas fa-times-circle me-1"></i> Plazo vencido
+                                            </div>
+                                            <button class="btn btn-secondary w-100 fw-bold" disabled>
+                                                <i class="fas fa-lock me-1"></i> Cerrado
+                                            </button>
+                                <?php   else: ?>
+                                            <div class="alert alert-warning py-2 px-3 small text-center fw-bold mb-3 border-warning">
+                                                <i class="fas fa-exclamation-triangle me-1"></i> Pendiente de envío
+                                            </div>
+                                            <a href="subir_ficha.php?id=<?= $caso['actividad_id'] ?>" class="btn btn-primary w-100 fw-bold">
+                                                <i class="fas fa-cloud-upload-alt me-1"></i> Resolver y Subir
+                                            </a>
+                                <?php   endif; ?>
                                 
                                 <?php elseif ($caso['estado'] === 'Enviado'): ?>
                                     <div class="alert alert-info py-2 px-3 small text-center fw-bold mb-3 border-info">

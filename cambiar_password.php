@@ -1,5 +1,7 @@
 <?php
 // cambiar_password.php - Cambio de contraseña para usuarios con sesión iniciada
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.php');

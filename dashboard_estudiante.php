@@ -1,5 +1,7 @@
 <?php
 // dashboard_estudiante.php - Panel principal del estudiante
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'estudiante') {
     header('Location: login.php');

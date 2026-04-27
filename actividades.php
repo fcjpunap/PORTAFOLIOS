@@ -1,5 +1,7 @@
 <?php
 // actividades.php - Panel Gestor Completo de Casos (Listar, Buscar, Editar, Duplicar, Eliminar y Revisar)
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'docente') { header('Location: login.php'); exit; }
 require_once 'config/conexion.php';

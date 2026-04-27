@@ -1,5 +1,7 @@
 <?php
 // detalle_entrega.php - Vista del estudiante para ver su trabajo enviado y su nota
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'estudiante') {
@@ -36,6 +38,10 @@ $stmt->execute([$envio_id]);
 $caso = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$caso) { die("El envío no existe."); }
+
+$stmt_anexos = $pdo->prepare("SELECT nombre_archivo, ruta_archivo, tipo_archivo FROM anexos WHERE envio_id = ?");
+$stmt_anexos->execute([$envio_id]);
+$anexos = $stmt_anexos->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -92,6 +98,29 @@ if (!$caso) { die("El envío no existe."); }
                     </div>
                 </div>
 
+                <?php if (!empty($anexos)): ?>
+                    <?php foreach ($anexos as $index => $anexo): ?>
+                    <div class="card shadow-sm border-0 mb-4 bg-white border-top border-4 border-info">
+                        <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold text-secondary mb-0"><i class="fas fa-paperclip me-2 text-info"></i> Archivo Adjunto: <?= htmlspecialchars($anexo['nombre_archivo']) ?></h5>
+                            <?php if ($anexo['tipo_archivo'] === 'url'): ?>
+                                <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-info text-white fw-bold shadow-sm">
+                                    <i class="fas fa-external-link-alt me-2"></i> Visitar Web Externa
+                                </a>
+                            <?php elseif ($anexo['tipo_archivo'] === 'html'): ?>
+                                <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-dark fw-bold shadow-sm">
+                                    <i class="fas fa-globe me-2"></i> Ver Expediente Web (ZIP)
+                                </a>
+                            <?php else: ?>
+                                <button class="btn btn-danger fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPDF_<?= $index ?>">
+                                    <i class="fas fa-file-pdf me-2"></i> Ver Anexo PDF
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+
                 <div class="respuestas-container">
                     <?php 
                     // 1. SI ES UN TRABAJO NUEVO (Formato Dinámico JSON)
@@ -146,5 +175,21 @@ if (!$caso) { die("El envío no existe."); }
             </div>
         </div>
     </main>
+
+    <?php if (!empty($anexos)): ?>
+        <?php foreach ($anexos as $index => $anexo): ?>
+            <?php if ($anexo['tipo_archivo'] === 'pdf'): ?>
+            <div class="modal fade" id="modalPDF_<?= $index ?>" tabindex="-1">
+                <div class="modal-dialog modal-xl modal-dialog-centered" style="height: 95vh; max-width: 95%;">
+                    <div class="modal-content h-100 border-0 shadow-lg">
+                        <div class="modal-header bg-danger text-white border-0"><h5 class="modal-title fw-bold">Anexo: <?= htmlspecialchars($anexo['nombre_archivo']) ?></h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body p-0 bg-dark"><iframe src="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" width="100%" height="100%" style="border: none;"></iframe></div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php endif; ?>
 </body>
 </html>

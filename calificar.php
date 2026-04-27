@@ -1,5 +1,7 @@
 <?php
 // calificar.php - Interfaz de Calificación inteligente (Soporte PDF, Expediente Web y URL Externa)
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 if (!isset($_SESSION['usuario_id']) || !in_array($_SESSION['rol'], ['docente', 'admin'])) {
     header('Location: login.php');
@@ -75,10 +77,10 @@ try {
 
     if (!$envio) die("El trabajo solicitado no existe.");
 
-    // Obtener el archivo adjunto (PDF, HTML/ZIP o URL Externa)
-    $stmt_anexo = $pdo->prepare("SELECT nombre_archivo, ruta_archivo, tipo_archivo FROM anexos WHERE envio_id = ? LIMIT 1");
-    $stmt_anexo->execute([$envio_id]);
-    $anexo = $stmt_anexo->fetch(PDO::FETCH_ASSOC);
+    // Obtener los archivos adjuntos (PDF, HTML/ZIP o URL Externa)
+    $stmt_anexos = $pdo->prepare("SELECT nombre_archivo, ruta_archivo, tipo_archivo FROM anexos WHERE envio_id = ?");
+    $stmt_anexos->execute([$envio_id]);
+    $anexos = $stmt_anexos->fetchAll(PDO::FETCH_ASSOC);
 
     $es_grupal = ($envio['tipo_trabajo'] === 'Grupal');
     
@@ -127,20 +129,24 @@ try {
                     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                         <h4 class="mb-0 fw-bold text-secondary"><i class="fas fa-book-reader text-primary me-2"></i> Desarrollo de la Ficha</h4>
                         
-                        <?php if ($anexo): ?>
-                            <?php if ($anexo['tipo_archivo'] === 'url'): ?>
-                                <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-info text-white fw-bold shadow-sm">
-                                    <i class="fas fa-external-link-alt me-2"></i> Visitar Web Externa
-                                </a>
-                            <?php elseif ($anexo['tipo_archivo'] === 'html'): ?>
-                                <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-dark fw-bold shadow-sm">
-                                    <i class="fas fa-globe me-2"></i> Ver Expediente Web (ZIP)
-                                </a>
-                            <?php else: ?>
-                                <button class="btn btn-danger fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPDF">
-                                    <i class="fas fa-file-pdf me-2"></i> Ver Anexo PDF
-                                </button>
-                            <?php endif; ?>
+                        <?php if (!empty($anexos)): ?>
+                            <div class="d-flex gap-2 flex-wrap">
+                            <?php foreach ($anexos as $index => $anexo): ?>
+                                <?php if ($anexo['tipo_archivo'] === 'url'): ?>
+                                    <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-info text-white fw-bold shadow-sm">
+                                        <i class="fas fa-external-link-alt me-2"></i> Visitar Web Externa
+                                    </a>
+                                <?php elseif ($anexo['tipo_archivo'] === 'html'): ?>
+                                    <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-dark fw-bold shadow-sm">
+                                        <i class="fas fa-globe me-2"></i> Ver Expediente Web (ZIP)
+                                    </a>
+                                <?php else: ?>
+                                    <button class="btn btn-danger fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPDF_<?= $index ?>">
+                                        <i class="fas fa-file-pdf me-2"></i> Ver Anexo PDF
+                                    </button>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            </div>
                         <?php else: ?>
                             <span class="badge bg-secondary"><i class="fas fa-ban"></i> Sin adjunto extra</span>
                         <?php endif; ?>
@@ -224,15 +230,19 @@ try {
         <?php endif; ?>
     </div>
 
-    <?php if ($anexo && $anexo['tipo_archivo'] === 'pdf' && file_exists($anexo['ruta_archivo'])): ?>
-    <div class="modal fade" id="modalPDF" tabindex="-1">
-        <div class="modal-dialog modal-xl-custom modal-dialog-centered" style="height: 95vh;">
-            <div class="modal-content h-100 border-0 shadow-lg">
-                <div class="modal-header bg-danger text-white border-0"><h5 class="modal-title fw-bold">Anexo: <?= htmlspecialchars($anexo['nombre_archivo']) ?></h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-                <div class="modal-body p-0 bg-dark"><iframe src="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" width="100%" height="100%" style="border: none;"></iframe></div>
+    <?php if (!empty($anexos)): ?>
+        <?php foreach ($anexos as $index => $anexo): ?>
+            <?php if ($anexo['tipo_archivo'] === 'pdf'): ?>
+            <div class="modal fade" id="modalPDF_<?= $index ?>" tabindex="-1">
+                <div class="modal-dialog modal-xl-custom modal-dialog-centered" style="height: 95vh;">
+                    <div class="modal-content h-100 border-0 shadow-lg">
+                        <div class="modal-header bg-danger text-white border-0"><h5 class="modal-title fw-bold">Anexo: <?= htmlspecialchars($anexo['nombre_archivo']) ?></h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body p-0 bg-dark"><iframe src="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" width="100%" height="100%" style="border: none;"></iframe></div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
     <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

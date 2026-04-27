@@ -1,5 +1,7 @@
 <?php
 // matricular_manual.php - Asignación manual de 1 a 1 con buscador inteligente
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header('Location: login.php');

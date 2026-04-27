@@ -1,5 +1,7 @@
 <?php
 // detalle_ficha.php - Vista del docente para leer la resolución completa
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 
 // Solo Docentes o Administradores pueden ver esta página de forma privada

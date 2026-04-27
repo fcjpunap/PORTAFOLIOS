@@ -1,5 +1,7 @@
 <?php
 // subir_ficha.php - Formulario Inteligente (Soporta PDF, ZIP y URLs externas)
+session_set_cookie_params(14400);
+ini_set("session.gc_maxlifetime", 14400);
 session_start();
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'estudiante') { header('Location: login.php'); exit; }
 require_once 'config/conexion.php';
@@ -13,6 +15,10 @@ $stmt_act = $pdo->prepare("SELECT a.*, c.nombre_curso FROM actividades_fichas a 
 $stmt_act->execute([$actividad_id]);
 $actividad = $stmt_act->fetch(PDO::FETCH_ASSOC);
 if (!$actividad) die("Actividad no encontrada.");
+
+if ($actividad['fecha_limite'] && strtotime($actividad['fecha_limite']) < time()) {
+    die("El plazo para enviar esta actividad ha vencido.");
+}
 
 $stmt_est = $pdo->prepare("SELECT codigo_estudiante, apellidos FROM usuarios WHERE id = ?");
 $stmt_est->execute([$estudiante_id]);
@@ -62,8 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Guardar Enlace Externo
             $pdo->prepare("INSERT INTO anexos (envio_id, nombre_archivo, ruta_archivo, tipo_archivo) VALUES (?, ?, ?, 'url')")
                 ->execute([$envio_id, 'Enlace a Expediente Externo', $url_externa]);
-                
-        } elseif (isset($_FILES['anexos']) && $_FILES['anexos']['error'][0] !== UPLOAD_ERR_NO_FILE) {
+        }
+        
+        if (isset($_FILES['anexos']) && $_FILES['anexos']['error'][0] !== UPLOAD_ERR_NO_FILE) {
             $anio_actual = date('Y');
             $upload_dir_pdf = 'uploads/anexos/';
             $upload_dir_html = 'uploads/expedientes/' . $anio_actual . '/' . strtolower($codigo_est) . '_' . $actividad_id . '/';
@@ -71,17 +78,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!file_exists($upload_dir_pdf)) mkdir($upload_dir_pdf, 0777, true);
             
             foreach ($_FILES['anexos']['tmp_name'] as $key => $tmp) {
-                if ($_FILES['anexos']['size'][$key] > 0) {
+                if ($_FILES['anexos']['error'][$key] === UPLOAD_ERR_OK && $_FILES['anexos']['size'][$key] > 0) {
                     $nombre_original = $_FILES['anexos']['name'][$key];
                     $extension = strtolower(pathinfo($nombre_original, PATHINFO_EXTENSION));
 
-                    // Si sube un ZIP (Descomprimir y buscar HTML)
+                    // Si sube un ZIP (Descomprimir de forma segura y buscar HTML)
                     if ($extension === 'zip') {
                         if (!file_exists($upload_dir_html)) mkdir($upload_dir_html, 0777, true);
                         
                         $zip = new ZipArchive;
                         if ($zip->open($tmp) === TRUE) {
-                            $zip->extractTo($upload_dir_html);
+                            $allowed_exts = ['html', 'htm', 'css', 'js', 'json', 'jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'pdf', 'txt', 'mp4', 'webm', 'woff', 'woff2', 'ttf'];
+                            $disallowed_exts = ['php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'php8', 'phps', 'sh', 'exe', 'bat', 'cgi', 'pl', 'py', 'htaccess'];
+                            
+                            for ($i = 0; $i < $zip->numFiles; $i++) {
+                                $stat = $zip->statIndex($i);
+                                $filename = ltrim($stat['name'], '/\\');
+                                
+                                // Ignorar carpetas y rutas que intentan escapar del directorio (directory traversal)
+                                if (substr($filename, -1) === '/' || strpos($filename, '../') !== false || strpos($filename, '..\\') !== false) {
+                                    continue;
+                                }
+                                
+                                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                                
+                                // Extraer solo si NO está en la lista negra y SÍ está en la lista blanca
+                                if (!in_array($ext, $disallowed_exts) && in_array($ext, $allowed_exts)) {
+                                    $file_content = $zip->getFromIndex($i);
+                                    if ($file_content !== false) {
+                                        $file_dest_path = $upload_dir_html . $filename;
+                                        $file_dest_dir = dirname($file_dest_path);
+                                        if (!file_exists($file_dest_dir)) mkdir($file_dest_dir, 0777, true);
+                                        file_put_contents($file_dest_path, $file_content);
+                                    }
+                                }
+                            }
                             $zip->close();
                             
                             $ruta_index = $upload_dir_html . 'index.html';
