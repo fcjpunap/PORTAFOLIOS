@@ -15,12 +15,13 @@ $mensaje = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
     if ($_POST['accion'] === 'crear') {
         $nombre_curso = trim($_POST['nombre_curso']);
+        $semestre = trim($_POST['semestre'] ?? '');
         $docente_id = $_POST['docente_id'];
 
-        if (!empty($nombre_curso) && !empty($docente_id)) {
+        if (!empty($nombre_curso) && !empty($semestre) && !empty($docente_id)) {
             try {
-                $stmt = $pdo->prepare("INSERT INTO cursos (nombre_curso, docente_id) VALUES (?, ?)");
-                $stmt->execute([$nombre_curso, $docente_id]);
+                $stmt = $pdo->prepare("INSERT INTO cursos (nombre_curso, semestre, docente_id) VALUES (?, ?, ?)");
+                $stmt->execute([$nombre_curso, $semestre, $docente_id]);
                 $mensaje = "<div class='alert alert-success'><i class='fas fa-check-circle me-1'></i> Curso creado exitosamente.</div>";
             } catch (PDOException $e) {
                 $mensaje = "<div class='alert alert-danger'>Error al crear curso.</div>";
@@ -29,10 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
     } elseif ($_POST['accion'] === 'editar') {
         $id = $_POST['curso_id'];
         $nombre_curso = trim($_POST['nombre_curso']);
+        $semestre = trim($_POST['semestre'] ?? '');
         $docente_id = $_POST['docente_id'];
         try {
-            $stmt = $pdo->prepare("UPDATE cursos SET nombre_curso=?, docente_id=? WHERE id=?");
-            $stmt->execute([$nombre_curso, $docente_id, $id]);
+            $stmt = $pdo->prepare("UPDATE cursos SET nombre_curso=?, semestre=?, docente_id=? WHERE id=?");
+            $stmt->execute([$nombre_curso, $semestre, $docente_id, $id]);
             $mensaje = "<div class='alert alert-info'>Curso actualizado correctamente.</div>";
         } catch (PDOException $e) {
             $mensaje = "<div class='alert alert-danger'>Error al actualizar.</div>";
@@ -73,7 +75,7 @@ $stmt_total->execute($params);
 $total_cursos = $stmt_total->fetchColumn();
 $total_paginas = ceil($total_cursos / $limite);
 
-$sql_cursos = "SELECT c.id, c.nombre_curso, c.docente_id, u.nombres as doc_nom, u.apellidos as doc_ape 
+$sql_cursos = "SELECT c.id, c.nombre_curso, c.semestre, c.docente_id, u.nombres as doc_nom, u.apellidos as doc_ape 
                FROM cursos c 
                INNER JOIN usuarios u ON c.docente_id = u.id 
                $whereSql 
@@ -110,6 +112,10 @@ $cursos = $stmt_cursos->fetchAll(PDO::FETCH_ASSOC);
                                 <label class="small fw-bold">Nombre de la Asignatura *</label>
                                 <input type="text" name="nombre_curso" class="form-control" placeholder="Ej. Derecho Penal Especial III" required>
                             </div>
+                            <div class="mb-3">
+                                <label class="small fw-bold">Semestre *</label>
+                                <input type="text" name="semestre" class="form-control" placeholder="Ej. 2026-1" required>
+                            </div>
                             <div class="mb-4">
                                 <label class="small fw-bold">Asignar a Docente *</label>
                                 <select name="docente_id" class="form-select" required>
@@ -142,6 +148,7 @@ $cursos = $stmt_cursos->fetchAll(PDO::FETCH_ASSOC);
                                 <tr>
                                     <th class="ps-3">ID</th>
                                     <th>Asignatura</th>
+                                    <th>Semestre</th>
                                     <th>Docente Asignado</th>
                                     <th class="text-center">Acciones</th>
                                 </tr>
@@ -154,6 +161,7 @@ $cursos = $stmt_cursos->fetchAll(PDO::FETCH_ASSOC);
                                     <tr>
                                         <td class="ps-3 fw-bold text-muted">#<?= $c['id'] ?></td>
                                         <td class="fw-bold"><?= htmlspecialchars($c['nombre_curso']) ?></td>
+                                        <td><span class="badge bg-secondary"><?= htmlspecialchars($c['semestre'] ?? '') ?></span></td>
                                         <td><i class="fas fa-chalkboard-teacher text-muted me-1"></i> <?= htmlspecialchars($c['doc_ape'] . ', ' . $c['doc_nom']) ?></td>
                                         <td class="text-center">
                                             <div class="btn-group">
@@ -201,6 +209,10 @@ $cursos = $stmt_cursos->fetchAll(PDO::FETCH_ASSOC);
                       <input type="text" name="nombre_curso" id="edit_nombre_curso" class="form-control" required>
                   </div>
                   <div class="mb-3">
+                      <label class="small fw-bold">Semestre</label>
+                      <input type="text" name="semestre" id="edit_semestre" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
                       <label class="small fw-bold">Docente Asignado</label>
                       <select name="docente_id" id="edit_docente_id" class="form-select" required>
                           <?php foreach($docentes as $d): ?>
@@ -223,6 +235,7 @@ $cursos = $stmt_cursos->fetchAll(PDO::FETCH_ASSOC);
         function abrirModalEditar(curso) {
             document.getElementById('edit_curso_id').value = curso.id;
             document.getElementById('edit_nombre_curso').value = curso.nombre_curso;
+            document.getElementById('edit_semestre').value = curso.semestre || '';
             document.getElementById('edit_docente_id').value = curso.docente_id;
             new bootstrap.Modal(document.getElementById('modalEditarCurso')).show();
         }
