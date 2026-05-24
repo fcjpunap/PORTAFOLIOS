@@ -211,7 +211,11 @@ if (!empty($ids_cursos)) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const modalUI = new bootstrap.Modal(document.getElementById('modalActividad'));
-        function toggleInt() { document.getElementById("divMaxInt").style.display = (document.getElementById("inputTipo").value === 'Grupal') ? 'block' : 'none'; }
+        function toggleInt() { 
+            const isGrupal = document.getElementById("inputTipo").value === 'Grupal';
+            document.getElementById("divMaxInt").style.display = isGrupal ? 'block' : 'none'; 
+            document.getElementById("inputMax").disabled = !isGrupal;
+        }
         
         function addSeccion(titulo = '', guia = '') {
             const container = document.getElementById('secciones_container');
@@ -243,7 +247,7 @@ if (!empty($ids_cursos)) {
             document.getElementById('inputCurso').value = act.curso_id;
             document.getElementById('inputTitulo').value = act.titulo_caso;
             document.getElementById('inputDesc').value = act.descripcion;
-            document.getElementById('inputFecha').value = act.fecha_cierre ? act.fecha_cierre.replace(' ', 'T') : '';
+            document.getElementById('inputFecha').value = act.fecha_cierre ? act.fecha_cierre.substring(0, 16).replace(' ', 'T') : '';
             document.getElementById('inputTipo').value = act.tipo_trabajo;
             document.getElementById('inputMax').value = act.max_integrantes;
             document.getElementById('inputHabilitado').checked = (act.habilitado == 1);

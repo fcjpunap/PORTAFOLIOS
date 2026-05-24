@@ -175,7 +175,7 @@ try {
                                         <td class="ps-4 fw-bold text-dark"><?= htmlspecialchars($envio['apellidos'] . ', ' . $envio['nombres']) ?></td>
                                         <td class="small text-muted"><?= htmlspecialchars($envio['titulo_caso']) ?></td>
                                         <td class="small">
-                                            <?= date('d/m/Y H:i', strtotime($envio['fecha_envio'])) ?><br>
+                                            <?= date('d/m/Y H:i:s', strtotime($envio['fecha_envio'])) ?><br>
                                             <?php if($envio['estado'] == 'Revisado'): ?>
                                                 <span class="badge bg-success" style="font-size: 0.7rem;">Revisado</span>
                                             <?php else: ?>
