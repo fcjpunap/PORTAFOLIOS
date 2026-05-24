@@ -34,6 +34,12 @@ $caso = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$caso) {
     die("El caso solicitado no existe o aún no ha sido aprobado para su publicación.");
 }
+
+// Consultar Anexos (URLs, HTML, PDF)
+$stmt_anexos = $pdo->prepare("SELECT * FROM anexos WHERE envio_id = ?");
+$stmt_anexos->execute([$envio_id]);
+$anexos = $stmt_anexos->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -147,6 +153,42 @@ if (!$caso) {
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <?php if (!empty($anexos)): ?>
+                <div class="content-box border-start border-4 border-dark mt-4">
+                    <h4 class="section-title text-dark border-dark"><i class="fas fa-paperclip me-2"></i>Expediente Externo y Anexos</h4>
+                    <div class="row g-3 mt-2">
+                        <?php foreach ($anexos as $anexo): ?>
+                            <?php if ($anexo['tipo_archivo'] === 'url'): ?>
+                                <div class="col-md-6">
+                                    <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-outline-primary w-100 p-3 text-start shadow-sm">
+                                        <i class="fas fa-external-link-alt fs-4 mb-2 text-primary d-block"></i>
+                                        <span class="fw-bold d-block">Enlace Externo</span>
+                                        <small class="text-muted text-truncate d-block"><?= htmlspecialchars($anexo['ruta_archivo']) ?></small>
+                                    </a>
+                                </div>
+                            <?php elseif ($anexo['tipo_archivo'] === 'html'): ?>
+                                <div class="col-md-6">
+                                    <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-outline-success w-100 p-3 text-start shadow-sm">
+                                        <i class="fas fa-globe fs-4 mb-2 text-success d-block"></i>
+                                        <span class="fw-bold d-block">Expediente Web (HTML)</span>
+                                        <small class="text-muted">Desarrollado y subido por el estudiante</small>
+                                    </a>
+                                </div>
+                            <?php elseif ($anexo['tipo_archivo'] === 'pdf'): ?>
+                                <div class="col-md-6">
+                                    <a href="<?= htmlspecialchars($anexo['ruta_archivo']) ?>" target="_blank" class="btn btn-outline-danger w-100 p-3 text-start shadow-sm">
+                                        <i class="fas fa-file-pdf fs-4 mb-2 text-danger d-block"></i>
+                                        <span class="fw-bold d-block">Documento Adjunto (PDF)</span>
+                                        <small class="text-muted text-truncate d-block"><?= htmlspecialchars($anexo['nombre_archivo']) ?></small>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
 
             </div>
         </div>
