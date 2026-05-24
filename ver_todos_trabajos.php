@@ -154,7 +154,7 @@ $envios = $stmt_envios->fetchAll(PDO::FETCH_ASSOC);
                                     <div class="fw-bold text-secondary"><?= htmlspecialchars($e['titulo_caso']) ?></div>
                                     <div class="small text-muted"><i class="fas fa-book"></i> <?= htmlspecialchars($e['nombre_curso']) ?></div>
                                 </td>
-                                <td class="small text-muted"><?= date('d/m/Y h:i A', strtotime($e['fecha_envio'])) ?></td>
+                                <td class="small text-muted"><?= date('d/m/Y H:i:s', strtotime($e['fecha_envio'])) ?></td>
                                 <td>
                                     <?php if($e['estado'] == 'Revisado'): ?>
                                         <span class="badge bg-success">Nota: <?= $e['calificacion'] ?></span>
