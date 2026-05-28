@@ -29,7 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_textos'])) {
         $stmt_upd = $pdo->prepare("UPDATE envios_fichas SET factum=?, tipicidad=?, dogmatica=?, jurisprudencia=?, fallo=? WHERE id=?");
         $stmt_upd->execute([$factum, $tipicidad, $dogmatica, $jurisprudencia, $fallo, $envio_id]);
     }
-    $mensaje = "Textos del envío actualizados correctamente.";
+    
+    // Actualizar URL externa si existe y fue enviada
+    if (isset($_POST['anexo_url_id']) && isset($_POST['ruta_archivo_url'])) {
+        $stmt_url_upd = $pdo->prepare("UPDATE anexos SET ruta_archivo = ? WHERE id = ? AND envio_id = ? AND tipo_archivo = 'url'");
+        $stmt_url_upd->execute([trim($_POST['ruta_archivo_url']), $_POST['anexo_url_id'], $envio_id]);
+    }
+
+    $mensaje = "Datos del envío actualizados correctamente.";
     $tipo_mensaje = "success";
 }
 
@@ -51,6 +58,11 @@ $stmt_anexos = $pdo->prepare("SELECT ruta_archivo FROM anexos WHERE envio_id = ?
 $stmt_anexos->execute([$envio_id]);
 $anexo_html = $stmt_anexos->fetch(PDO::FETCH_ASSOC);
 $tiene_gestor = ($anexo_html !== false);
+
+// Verificar si hay URL externa para editar
+$stmt_url = $pdo->prepare("SELECT id, ruta_archivo FROM anexos WHERE envio_id = ? AND tipo_archivo = 'url'");
+$stmt_url->execute([$envio_id]);
+$anexo_url = $stmt_url->fetch(PDO::FETCH_ASSOC);
 
 ?>
 <!DOCTYPE html>
@@ -121,7 +133,18 @@ $tiene_gestor = ($anexo_html !== false);
                                 }
                             }
                             ?>
-                            <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm"><i class="fas fa-save me-2"></i> Guardar Cambios del Texto</button>
+                            
+                            <?php if ($anexo_url !== false): ?>
+                                <hr class="my-4">
+                                <h6 class="fw-bold text-info mb-3"><i class="fas fa-link me-2"></i> Editar Enlace de Web Externa</h6>
+                                <div class='mb-4'>
+                                    <input type="hidden" name="anexo_url_id" value="<?= $anexo_url['id'] ?>">
+                                    <label class='fw-bold mb-1'>URL Externa (Google Drive, Canva, Blogger, etc.)</label>
+                                    <input type="url" class='form-control shadow-sm border-info' name="ruta_archivo_url" value="<?= htmlspecialchars($anexo_url['ruta_archivo']) ?>" required>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm"><i class="fas fa-save me-2"></i> Guardar Cambios</button>
                         </form>
                     </div>
                 </div>
