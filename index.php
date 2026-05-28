@@ -12,12 +12,17 @@ if ($pagina_actual < 1) $pagina_actual = 1;
 $offset = ($pagina_actual - 1) * $articulos_por_pagina;
 
 $curso_nombre_filtro = isset($_GET['curso_nombre']) ? trim($_GET['curso_nombre']) : '';
+$semestre_filtro = isset($_GET['semestre']) ? trim($_GET['semestre']) : '';
 $busqueda_general = isset($_GET['q']) ? trim($_GET['q']) : '';
 $anio_filtro = isset($_GET['anio']) ? (int)$_GET['anio'] : '';
 
 // 2. Obtener lista de nombres de cursos para el datalist
 $stmt_lista_cursos = $pdo->query("SELECT DISTINCT nombre_curso FROM cursos ORDER BY nombre_curso ASC");
 $nombres_cursos = $stmt_lista_cursos->fetchAll(PDO::FETCH_COLUMN);
+
+// Obtener lista de semestres
+$stmt_semestres = $pdo->query("SELECT DISTINCT semestre FROM cursos ORDER BY semestre ASC");
+$semestres_disponibles = $stmt_semestres->fetchAll(PDO::FETCH_COLUMN);
 
 // Obtener lista de años para el filtro
 $stmt_anios = $pdo->query("SELECT DISTINCT YEAR(fecha_envio) as anio FROM envios_fichas WHERE estado = 'Revisado' ORDER BY anio DESC");
@@ -30,6 +35,11 @@ $where_sql = "WHERE e.estado = 'Revisado'";
 if ($curso_nombre_filtro !== '') {
     $where_sql .= " AND c.nombre_curso LIKE ?";
     $params[] = "%$curso_nombre_filtro%";
+}
+
+if ($semestre_filtro !== '') {
+    $where_sql .= " AND c.semestre = ?";
+    $params[] = $semestre_filtro;
 }
 
 if ($anio_filtro !== '' && $anio_filtro > 0) {
@@ -122,21 +132,32 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
             <h1 class="h3 fw-bold mb-4">Explorar Casos Jurídicos Resueltos y otras evidencias de desempeño de los estudiantes de la FCJP</h1>
             
             <form action="index.php" method="GET" class="row g-2 justify-content-center">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
                         <input type="text" name="q" class="form-control border-0" placeholder="Buscar por tema, estudiante o docente..." value="<?= htmlspecialchars($busqueda_general) ?>">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-0"><i class="fas fa-book text-muted"></i></span>
-                        <input list="cursosData" name="curso_nombre" class="form-control border-0" placeholder="Nombre del curso..." value="<?= htmlspecialchars($curso_nombre_filtro) ?>">
+                        <input list="cursosData" name="curso_nombre" class="form-control border-0" placeholder="Curso..." value="<?= htmlspecialchars($curso_nombre_filtro) ?>">
                         <datalist id="cursosData">
                             <?php foreach($nombres_cursos as $nom): ?>
                                 <option value="<?= htmlspecialchars($nom) ?>">
                             <?php endforeach; ?>
                         </datalist>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0"><i class="fas fa-layer-group text-muted"></i></span>
+                        <select name="semestre" class="form-select border-0">
+                            <option value="">Semestre (Todos)</option>
+                            <?php foreach($semestres_disponibles as $sem): ?>
+                                <option value="<?= htmlspecialchars($sem) ?>" <?= ($sem === $semestre_filtro) ? 'selected' : '' ?>><?= htmlspecialchars($sem) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -153,7 +174,7 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm">Filtrar</button>
                 </div>
-                <?php if($curso_nombre_filtro !== '' || $busqueda_general !== '' || $anio_filtro !== ''): ?>
+                <?php if($curso_nombre_filtro !== '' || $busqueda_general !== '' || $anio_filtro !== '' || $semestre_filtro !== ''): ?>
                     <div class="col-md-1">
                         <a href="index.php" class="btn btn-danger w-100" title="Limpiar Filtros"><i class="fas fa-times"></i></a>
                     </div>
@@ -205,6 +226,7 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
                         $query_string = http_build_query([
                             'p' => $i,
                             'curso_nombre' => $curso_nombre_filtro,
+                            'semestre' => $semestre_filtro,
                             'q' => $busqueda_general,
                             'anio' => $anio_filtro
                         ]);
