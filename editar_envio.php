@@ -36,6 +36,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_textos'])) {
         $stmt_url_upd->execute([trim($_POST['ruta_archivo_url']), $_POST['anexo_url_id'], $envio_id]);
     }
 
+    // Reemplazar PDF si se subió uno nuevo
+    if (isset($_POST['anexo_pdf_id']) && isset($_FILES['nuevo_pdf']) && $_FILES['nuevo_pdf']['error'] === UPLOAD_ERR_OK) {
+        $pdf_id = $_POST['anexo_pdf_id'];
+        $old_pdf_path = $_POST['vieja_ruta_pdf'];
+        $nombre_original = $_FILES['nuevo_pdf']['name'];
+        if (strtolower(pathinfo($nombre_original, PATHINFO_EXTENSION)) === 'pdf') {
+            $upload_dir_pdf = 'uploads/anexos/';
+            if (!file_exists($upload_dir_pdf)) mkdir($upload_dir_pdf, 0777, true);
+            $nombre_seguro = time() . '_' . preg_replace("/[^a-zA-Z0-9.-]/", "_", $nombre_original);
+            $destino = $upload_dir_pdf . $nombre_seguro;
+            if (move_uploaded_file($_FILES['nuevo_pdf']['tmp_name'], $destino)) {
+                if (file_exists($old_pdf_path) && !is_dir($old_pdf_path)) @unlink($old_pdf_path);
+                $stmt_pdf_upd = $pdo->prepare("UPDATE anexos SET nombre_archivo = ?, ruta_archivo = ? WHERE id = ? AND envio_id = ? AND tipo_archivo = 'pdf'");
+                $stmt_pdf_upd->execute([$nombre_original, $destino, $pdf_id, $envio_id]);
+            }
+        }
+    }
+
+    // Eliminar PDF si se marcó la casilla (solo si no se está reemplazando)
+    if (isset($_POST['eliminar_pdf']) && $_POST['eliminar_pdf'] == '1' && isset($_POST['anexo_pdf_id']) && (!isset($_FILES['nuevo_pdf']) || $_FILES['nuevo_pdf']['error'] !== UPLOAD_ERR_OK)) {
+        $pdf_id = $_POST['anexo_pdf_id'];
+        $old_pdf_path = $_POST['vieja_ruta_pdf'];
+        if (file_exists($old_pdf_path) && !is_dir($old_pdf_path)) @unlink($old_pdf_path);
+        $stmt_pdf_del = $pdo->prepare("DELETE FROM anexos WHERE id = ? AND envio_id = ? AND tipo_archivo = 'pdf'");
+        $stmt_pdf_del->execute([$pdf_id, $envio_id]);
+    }
+
     $mensaje = "Datos del envío actualizados correctamente.";
     $tipo_mensaje = "success";
 }
@@ -63,6 +90,11 @@ $tiene_gestor = ($anexo_html !== false);
 $stmt_url = $pdo->prepare("SELECT id, ruta_archivo FROM anexos WHERE envio_id = ? AND tipo_archivo = 'url'");
 $stmt_url->execute([$envio_id]);
 $anexo_url = $stmt_url->fetch(PDO::FETCH_ASSOC);
+
+// Verificar si hay PDF para editar/eliminar
+$stmt_pdf = $pdo->prepare("SELECT id, nombre_archivo, ruta_archivo FROM anexos WHERE envio_id = ? AND tipo_archivo = 'pdf'");
+$stmt_pdf->execute([$envio_id]);
+$anexo_pdf = $stmt_pdf->fetch(PDO::FETCH_ASSOC);
 
 ?>
 <!DOCTYPE html>
@@ -104,7 +136,7 @@ $anexo_url = $stmt_url->fetch(PDO::FETCH_ASSOC);
                         <h5 class="mb-0 fw-bold text-secondary"><i class="fas fa-edit text-primary me-2"></i> Modificar Contenido Textual de la Ficha</h5>
                     </div>
                     <div class="card-body p-4">
-                        <form action="" method="POST">
+                        <form action="" method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="guardar_textos" value="1">
                             <?php 
                             if (!empty($envio['respuestas_json'])) {
@@ -141,6 +173,27 @@ $anexo_url = $stmt_url->fetch(PDO::FETCH_ASSOC);
                                     <input type="hidden" name="anexo_url_id" value="<?= $anexo_url['id'] ?>">
                                     <label class='fw-bold mb-1'>URL Externa (Google Drive, Canva, Blogger, etc.)</label>
                                     <input type="url" class='form-control shadow-sm border-info' name="ruta_archivo_url" value="<?= htmlspecialchars($anexo_url['ruta_archivo']) ?>" required>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($anexo_pdf !== false): ?>
+                                <hr class="my-4">
+                                <h6 class="fw-bold text-danger mb-3"><i class="fas fa-file-pdf me-2"></i> Anexo PDF Actual: <?= htmlspecialchars($anexo_pdf['nombre_archivo']) ?></h6>
+                                <div class='mb-4 p-3 border rounded bg-light'>
+                                    <input type="hidden" name="anexo_pdf_id" value="<?= $anexo_pdf['id'] ?>">
+                                    <input type="hidden" name="vieja_ruta_pdf" value="<?= htmlspecialchars($anexo_pdf['ruta_archivo']) ?>">
+                                    
+                                    <div class="mb-3">
+                                        <label class='fw-bold text-dark mb-1'>Reemplazar archivo PDF:</label>
+                                        <input type="file" class="form-control shadow-sm border-danger" name="nuevo_pdf" accept=".pdf">
+                                        <small class="text-muted">Si subes un archivo, se borrará el actual y será reemplazado.</small>
+                                    </div>
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input" type="checkbox" value="1" id="eliminar_pdf" name="eliminar_pdf">
+                                        <label class="form-check-label fw-bold text-danger" for="eliminar_pdf">
+                                            Eliminar este PDF permanentemente (sin reemplazarlo)
+                                        </label>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                             
