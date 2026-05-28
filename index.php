@@ -42,10 +42,13 @@ $total_paginas = ceil($total_articulos / $articulos_por_pagina);
 
 // Consulta de datos
 $sql_repositorio = "
-    SELECT e.id as envio_id, a.titulo_caso, e.factum, e.dogmatica, c.nombre_curso, e.fecha_envio
+    SELECT e.id as envio_id, a.titulo_caso, e.factum, e.dogmatica, c.nombre_curso, e.fecha_envio,
+           u.nombres as autor_nombres, u.apellidos as autor_apellidos,
+           (SELECT COUNT(*) FROM envio_integrantes ei WHERE ei.envio_id = e.id) as total_integrantes
     FROM envios_fichas e
     INNER JOIN actividades_fichas a ON e.actividad_id = a.id
     INNER JOIN cursos c ON a.curso_id = c.id
+    LEFT JOIN usuarios u ON e.lider_id = u.id
     $where_sql
     ORDER BY e.fecha_envio DESC 
     LIMIT $articulos_por_pagina OFFSET $offset
@@ -145,7 +148,12 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
                     <p class="text-muted">No se encontraron resultados para la búsqueda actual.</p>
                 </div>
             <?php else: ?>
-                <?php foreach ($casos_resueltos as $caso): ?>
+                <?php foreach ($casos_resueltos as $caso): 
+                    $autor = htmlspecialchars($caso['autor_apellidos'] . ', ' . $caso['autor_nombres']);
+                    if ($caso['total_integrantes'] > 1) {
+                        $autor .= ' <span class="fst-italic">et al.</span>';
+                    }
+                ?>
                     <div class="col">
                         <div class="card caso-card shadow-sm">
                             <div class="card-body d-flex flex-column">
@@ -154,6 +162,7 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
                                     <small class="text-muted"><i class="far fa-calendar-alt"></i> <?= date('d/m/Y', strtotime($caso['fecha_envio'])) ?></small>
                                 </div>
                                 <h5 class="card-title text-dark fw-bold" style="font-size: 1.05rem;"><?= htmlspecialchars($caso['titulo_caso']) ?></h5>
+                                <div class="mb-2 text-secondary small fw-bold"><i class="fas fa-user-edit me-1 text-primary"></i> <?= $autor ?></div>
                                 <p class="card-text text-muted small text-justify">
                                     <?= htmlspecialchars(mb_substr($caso['factum'], 0, 160)) ?>...
                                 </p>
