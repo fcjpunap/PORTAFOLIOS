@@ -127,7 +127,12 @@ try {
             <div class="col-lg-8 mb-4">
                 <div class="card shadow-sm border-0 border-top border-4 border-primary">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                        <h4 class="mb-0 fw-bold text-secondary"><i class="fas fa-book-reader text-primary me-2"></i> Desarrollo de la Ficha</h4>
+                        <div class="d-flex align-items-center">
+                            <h4 class="mb-0 fw-bold text-secondary"><i class="fas fa-book-reader text-primary me-2"></i> Desarrollo de la Ficha</h4>
+                            <a href="editar_envio.php?id=<?= $envio_id ?>" class="btn btn-sm btn-outline-primary fw-bold ms-3" title="Editar Ficha y Gestionar Archivos (Expediente Web)">
+                                <i class="fas fa-edit me-1"></i> Editar
+                            </a>
+                        </div>
                         
                         <?php if (!empty($anexos)): ?>
                             <div class="d-flex gap-2 flex-wrap">
