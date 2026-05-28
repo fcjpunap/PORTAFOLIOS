@@ -13,10 +13,15 @@ $offset = ($pagina_actual - 1) * $articulos_por_pagina;
 
 $curso_nombre_filtro = isset($_GET['curso_nombre']) ? trim($_GET['curso_nombre']) : '';
 $busqueda_general = isset($_GET['q']) ? trim($_GET['q']) : '';
+$anio_filtro = isset($_GET['anio']) ? (int)$_GET['anio'] : '';
 
 // 2. Obtener lista de nombres de cursos para el datalist
 $stmt_lista_cursos = $pdo->query("SELECT DISTINCT nombre_curso FROM cursos ORDER BY nombre_curso ASC");
 $nombres_cursos = $stmt_lista_cursos->fetchAll(PDO::FETCH_COLUMN);
+
+// Obtener lista de años para el filtro
+$stmt_anios = $pdo->query("SELECT DISTINCT YEAR(fecha_envio) as anio FROM envios_fichas WHERE estado = 'Revisado' ORDER BY anio DESC");
+$anios_disponibles = $stmt_anios->fetchAll(PDO::FETCH_COLUMN);
 
 // 3. Construir consulta con filtros y orden
 $params = [];
@@ -27,14 +32,19 @@ if ($curso_nombre_filtro !== '') {
     $params[] = "%$curso_nombre_filtro%";
 }
 
+if ($anio_filtro !== '' && $anio_filtro > 0) {
+    $where_sql .= " AND YEAR(e.fecha_envio) = ?";
+    $params[] = $anio_filtro;
+}
+
 if ($busqueda_general !== '') {
-    $where_sql .= " AND (a.titulo_caso LIKE ? OR e.factum LIKE ? OR e.dogmatica LIKE ?)";
+    $where_sql .= " AND (a.titulo_caso LIKE ? OR e.factum LIKE ? OR e.dogmatica LIKE ? OR u.nombres LIKE ? OR u.apellidos LIKE ? OR doc.nombres LIKE ? OR doc.apellidos LIKE ?)";
     $bus_param = "%$busqueda_general%";
-    $params = array_merge($params, [$bus_param, $bus_param, $bus_param]);
+    $params = array_merge($params, [$bus_param, $bus_param, $bus_param, $bus_param, $bus_param, $bus_param, $bus_param]);
 }
 
 // Contar total para paginación
-$sql_count = "SELECT COUNT(*) FROM envios_fichas e INNER JOIN actividades_fichas a ON e.actividad_id = a.id INNER JOIN cursos c ON a.curso_id = c.id $where_sql";
+$sql_count = "SELECT COUNT(*) FROM envios_fichas e INNER JOIN actividades_fichas a ON e.actividad_id = a.id INNER JOIN cursos c ON a.curso_id = c.id LEFT JOIN usuarios u ON e.lider_id = u.id LEFT JOIN usuarios doc ON c.docente_id = doc.id $where_sql";
 $stmt_count = $pdo->prepare($sql_count);
 $stmt_count->execute($params);
 $total_articulos = $stmt_count->fetchColumn();
@@ -49,6 +59,7 @@ $sql_repositorio = "
     INNER JOIN actividades_fichas a ON e.actividad_id = a.id
     INNER JOIN cursos c ON a.curso_id = c.id
     LEFT JOIN usuarios u ON e.lider_id = u.id
+    LEFT JOIN usuarios doc ON c.docente_id = doc.id
     $where_sql
     ORDER BY e.fecha_envio DESC 
     LIMIT $articulos_por_pagina OFFSET $offset
@@ -114,13 +125,13 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" name="q" class="form-control border-0" placeholder="Buscar por tema o palabra clave..." value="<?= htmlspecialchars($busqueda_general) ?>">
+                        <input type="text" name="q" class="form-control border-0" placeholder="Buscar por tema, estudiante o docente..." value="<?= htmlspecialchars($busqueda_general) ?>">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-0"><i class="fas fa-book text-muted"></i></span>
-                        <input list="cursosData" name="curso_nombre" class="form-control border-0" placeholder="Escribir nombre del curso..." value="<?= htmlspecialchars($curso_nombre_filtro) ?>">
+                        <input list="cursosData" name="curso_nombre" class="form-control border-0" placeholder="Nombre del curso..." value="<?= htmlspecialchars($curso_nombre_filtro) ?>">
                         <datalist id="cursosData">
                             <?php foreach($nombres_cursos as $nom): ?>
                                 <option value="<?= htmlspecialchars($nom) ?>">
@@ -129,9 +140,20 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
                 <div class="col-md-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-0"><i class="fas fa-calendar-alt text-muted"></i></span>
+                        <select name="anio" class="form-select border-0">
+                            <option value="">Año (Todos)</option>
+                            <?php foreach($anios_disponibles as $anio): ?>
+                                <option value="<?= $anio ?>" <?= ($anio == $anio_filtro) ? 'selected' : '' ?>><?= $anio ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
                     <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm">Filtrar</button>
                 </div>
-                <?php if($curso_nombre_filtro !== '' || $busqueda_general !== ''): ?>
+                <?php if($curso_nombre_filtro !== '' || $busqueda_general !== '' || $anio_filtro !== ''): ?>
                     <div class="col-md-1">
                         <a href="index.php" class="btn btn-danger w-100" title="Limpiar Filtros"><i class="fas fa-times"></i></a>
                     </div>
@@ -183,7 +205,8 @@ $casos_resueltos = $stmt_res->fetchAll(PDO::FETCH_ASSOC);
                         $query_string = http_build_query([
                             'p' => $i,
                             'curso_nombre' => $curso_nombre_filtro,
-                            'q' => $busqueda_general
+                            'q' => $busqueda_general,
+                            'anio' => $anio_filtro
                         ]);
                     ?>
                         <li class="page-item <?= ($i == $pagina_actual) ? 'active' : '' ?>">
