@@ -42,15 +42,28 @@ if (!$base_path_real || !is_dir($base_path_real)) {
 // Utilidades de seguridad
 function get_secure_path($base_dir, $requested_path) {
     $requested_path = trim($requested_path, '/\\');
-    $target_path = $base_dir . DIRECTORY_SEPARATOR . $requested_path;
-    // Si el archivo no existe, realpath devolverá false, así que solo chequeamos el directorio padre
-    $parent_dir = dirname($target_path);
-    $real_parent = realpath($parent_dir);
     
-    if ($real_parent === false || strpos($real_parent, $base_dir) !== 0) {
-        return false;
+    if ($requested_path === '') {
+        return $base_dir;
     }
-    return $target_path;
+
+    $target_path = $base_dir . DIRECTORY_SEPARATOR . $requested_path;
+    $real_target = realpath($target_path);
+
+    if ($real_target !== false) {
+        if (strpos($real_target, $base_dir) !== 0) {
+            return false;
+        }
+        return $real_target;
+    } else {
+        $parent_dir = dirname($target_path);
+        $real_parent = realpath($parent_dir);
+        
+        if ($real_parent === false || strpos($real_parent, $base_dir) !== 0) {
+            return false;
+        }
+        return $target_path;
+    }
 }
 
 function is_allowed_extension($filename) {
@@ -80,7 +93,7 @@ function delete_dir($dirPath) {
 // Procesar acciones
 switch ($action) {
     case 'list':
-        $dir_param = $_GET['dir'] ?? '';
+        $dir_param = $_POST['dir'] ?? $_GET['dir'] ?? '';
         $target_dir = get_secure_path($base_path_real, $dir_param);
         
         if (!$target_dir || !is_dir($target_dir)) {
